@@ -66,24 +66,31 @@ func readFile(path string, opts *Options) (*File, error) {
 	var data []byte
 	var err error
 
-	if path != "" {
-		name := filepath.Join(opts.BaseDir, path+dot+opts.Extension)
-
-		if opts.Asset != nil {
-			data, err = opts.Asset(name)
-		} else {
-			data, err = ioutil.ReadFile(name)
+	if len(path) > 0 {
+		ds := append([]string{}, opts.BaseDirs...)
+		if len(ds) == 0 {
+			ds = append(ds, "")
+		}
+		for _, v := range ds {
+			name := filepath.Join(v, path+dot+opts.Extension)
+			if opts.Asset != nil {
+				if data, err = opts.Asset(name); err == nil {
+					return NewFile(path, data), nil
+				}
+				continue
+			}
+			if data, err = ioutil.ReadFile(name); err == nil {
+				return NewFile(path, data), nil
+			}
 		}
 
-		if err != nil {
-			return nil, err
-		}
+		return nil, err
 	}
 
 	return NewFile(path, data), nil
 }
 
-// findIncludes finds and adds include files.
+// findIncludes finbs and adds include files.
 func findIncludes(data []byte, opts *Options, includes *[]*File, targetFile *File) error {
 	includePaths, err := findIncludePaths(data, opts, targetFile)
 	if err != nil {
