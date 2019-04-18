@@ -67,22 +67,20 @@ func readFile(path string, opts *Options) (*File, error) {
 	var err error
 
 	if len(path) > 0 {
-		bs := append([]string{}, opts.BaseDirs...)
-		if len(bs) == 0 {
-			bs = append(bs, "")
+		ds := append([]string{}, opts.BaseDirs...)
+		if len(ds) == 0 {
+			ds = append(ds, "")
 		}
-
-		for _, v := range bs {
+		for _, v := range ds {
 			name := filepath.Join(v, path+dot+opts.Extension)
-
 			if opts.Asset != nil {
 				if data, err = opts.Asset(name); err == nil {
 					return NewFile(path, data), nil
 				}
-			} else {
-				if data, err = ioutil.ReadFile(name); err == nil {
-					return NewFile(path, data), nil
-				}
+				continue
+			}
+			if data, err = ioutil.ReadFile(name); err == nil {
+				return NewFile(path, data), nil
 			}
 		}
 

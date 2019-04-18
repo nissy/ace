@@ -37,6 +37,7 @@ type Options struct {
 	// This option should only be true in development.
 	DynamicReload bool
 	// BaseDirs represents a base directory of the Ace templates.
+	// Priority is applied when there is more than one.
 	BaseDirs []string
 	// Indent string used for indentation.
 	Indent    string
