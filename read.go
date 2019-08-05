@@ -41,7 +41,7 @@ var (
 // readFiles reads files and returns source for the parsing process.
 func readFiles(basePath, innerPath string, opts *Options) (*source, error) {
 	name := basePath + colon + innerPath
-	if !opts.SourceCache {
+	if opts.SourceCache {
 		if src, ok := getSourceCache(name); ok {
 			return src, nil
 		}
@@ -73,7 +73,7 @@ func readFiles(basePath, innerPath string, opts *Options) (*source, error) {
 
 	src := NewSource(base, inner, includes)
 
-	if !opts.SourceCache {
+	if opts.SourceCache {
 		setSourceCache(name, src)
 	}
 
