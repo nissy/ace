@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"path/filepath"
 	"strings"
+	"sync"
 )
 
 // Special characters
@@ -32,8 +33,20 @@ const (
 	bracketClose = "]"
 )
 
+var (
+	sourceCache      = make(map[string]*source)
+	sourceCacheMutex = new(sync.RWMutex)
+)
+
 // readFiles reads files and returns source for the parsing process.
 func readFiles(basePath, innerPath string, opts *Options) (*source, error) {
+	name := basePath + colon + innerPath
+	if !opts.SourceCache {
+		if src, ok := getSourceCache(name); ok {
+			return src, nil
+		}
+	}
+
 	// Read the base file.
 	base, err := readFile(basePath, opts)
 	if err != nil {
@@ -58,7 +71,13 @@ func readFiles(basePath, innerPath string, opts *Options) (*source, error) {
 		return nil, err
 	}
 
-	return NewSource(base, inner, includes), nil
+	src := NewSource(base, inner, includes)
+
+	if !opts.SourceCache {
+		setSourceCache(name, src)
+	}
+
+	return src, nil
 }
 
 // readFile reads a file and returns a file struct.
@@ -148,4 +167,23 @@ func hasFile(files []*File, path string) bool {
 	}
 
 	return false
+}
+
+func getSourceCache(name string) (*source, bool) {
+	sourceCacheMutex.RLock()
+	src, ok := sourceCache[name]
+	sourceCacheMutex.RUnlock()
+	return src, ok
+}
+
+func setSourceCache(name string, src *source) {
+	sourceCacheMutex.Lock()
+	sourceCache[name] = src
+	sourceCacheMutex.Unlock()
+}
+
+func FlushSourceCache() {
+	sourceCacheMutex.Lock()
+	sourceCache = make(map[string]*source)
+	sourceCacheMutex.Unlock()
 }

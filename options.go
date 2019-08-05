@@ -35,7 +35,8 @@ type Options struct {
 	// DynamicReload represents a flag which means whether Ace reloads
 	// templates dynamically.
 	// This option should only be true in development.
-	DynamicReload bool
+	TemplateCache bool
+	SourceCache   bool
 	// BaseDirs represents a base directory of the Ace templates.
 	// Priority is applied when there is more than one.
 	BaseDirs []string
